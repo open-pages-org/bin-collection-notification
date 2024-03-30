@@ -78,7 +78,7 @@ export const handler = async () => {
 
   const bins = collectionsTomorrow.map(item => `• ${item.read_date} - ${item.service}`).join("\n");
 
-  const message = `Tomorrow the following services will collected\n${bins}`;
+  const message = `Tomorrow the following services will be collected\n${bins}`;
   console.log(message);
 
   await sendSNS(message);

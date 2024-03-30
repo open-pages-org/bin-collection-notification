@@ -4,6 +4,8 @@ This project is a simple AWS CDK stack that sends a reminder notification to a u
 
 ## Architecture
 
+![Architecture](./docs/assets/architecture.png)
+
 The architecture of the project is as follows:
 
 1. A CloudWatch Event Rule is created that triggers a Lambda function every day at 6pm.
