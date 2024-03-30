@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { BinCollectionNotificationStack } from '../lib/bin-collection-notification-stack';
+import { BinCollectionNotificationStack } from '../lib/stacks/bin-collection-notification-stack';
 
 const app = new cdk.App();
 new BinCollectionNotificationStack(app, 'BinCollectionNotificationStack', {
