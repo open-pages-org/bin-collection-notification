@@ -1,39 +1,46 @@
-import { Duration, Stack, aws_events, aws_events_targets, aws_lambda, aws_lambda_nodejs, aws_sns, type StackProps } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy, Stack, aws_events, aws_events_targets, aws_lambda, type StackProps } from 'aws-cdk-lib';
+import { AttributeType, TableV2 } from 'aws-cdk-lib/aws-dynamodb';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { NodejsFunction, OutputFormat } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-import * as path from 'path';
 
 export class BinCollectionNotificationStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const topic = new aws_sns.Topic(this, 'BinCollectionNotifications', {
-      displayName: 'Bin Collection Notifications',
-      topicName: 'BinCollectionNotifications'
+    const usersTable = new TableV2(this, 'users-table', {
+      tableName: 'bin-collections-users',
+      partitionKey: { name: 'uuid', type: AttributeType.STRING },
+      removalPolicy: RemovalPolicy.RETAIN,
     });
 
-    const lambdaEntryPath = path.join(__dirname + "/../functions/checkBinCollections/index.ts")
-    const lambda = new aws_lambda_nodejs.NodejsFunction(this, 'checkBinCollectionsLambda', {
+    const lambda = new NodejsFunction(this, 'checkBinCollectionsLambda', {
+      functionName: 'bin-collections-check',
       runtime: aws_lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
+      handler: 'handler',
+      entry: "lib/functions/checkBinCollections/index.ts",
+      timeout: Duration.seconds(30),
       bundling: {
-        sourceMap: true,
-        minify: true,
+        platform: "node",
+        mainFields: ['module', 'main'],
+        format: OutputFormat.ESM,
       },
-      entry: lambdaEntryPath,
       environment: {
-        TOPIC_ARN: topic.topicArn
+        USERS_TABLE: usersTable.tableName,
       },
       memorySize: 256,
-      timeout: Duration.seconds(30)
     });
+    usersTable.grantReadData(lambda);
+    lambda.addToRolePolicy(new PolicyStatement({
+      actions: ['sns:Publish'],
+      resources: ['*'],
+    }));
 
-    topic.grantPublish(lambda);
 
     const rule = new aws_events.Rule(this, 'Rule', {
       schedule: aws_events.Schedule.expression('cron(0 18 ? * * *)')
     });
 
     rule.addTarget(new aws_events_targets.LambdaFunction(lambda));
-
   }
 }
