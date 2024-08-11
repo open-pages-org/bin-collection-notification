@@ -94,6 +94,13 @@ const sendSMS = async (mobileNumber: string, message: string) => {
   const command = new PublishCommand({
     PhoneNumber: mobileNumber,
     Message: message,
+    Subject: "Bin Collections Tomorrow",
+    MessageAttributes: {
+      "AWS.SNS.SMS.SenderID": {
+        DataType: "String",
+        StringValue: "Lynmouth",
+      },
+    }
   });
   await snsClient.send(command);
 
@@ -137,6 +144,6 @@ export const handler = async () => {
 
   return {
     statusCode: 200,
-    body: `Sent messages to ${users.length} users`,
+    body: `Sent messages to ${results.filter(result => result.status === "fulfilled").length} users`,
   };
 };
