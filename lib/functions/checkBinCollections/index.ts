@@ -41,7 +41,7 @@ const snsClient = new SNSClient({
 const formatDate = (date: Date) => {
   let day: string | number = date.getDate();
   let month: string | number = date.getMonth() + 1; // Month is zero-based, so we add 1
-  let year = date.getFullYear();
+  const year = date.getFullYear();
 
   // Pad single digit day/month with leading zero
   if (day < 10) day = '0' + day;
@@ -51,8 +51,8 @@ const formatDate = (date: Date) => {
 }
 
 const getTomorrowDate = () => {
-  let today = new Date();
-  let tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
 
   return formatDate(tomorrow);
 }
@@ -125,7 +125,7 @@ export const handler = async () => {
     };
   }
 
-  const bins = collectionsTomorrow.map(item => `• ${item.read_date} - ${item.service}`).join("\n");
+  const bins = collectionsTomorrow.map(item => item.service.replace(" Collection Service", "")).join(", ");
 
   const users = await getUsers();
   console.log(users);
